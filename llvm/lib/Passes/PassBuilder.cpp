@@ -245,6 +245,16 @@
 #include "llvm/Transforms/Vectorize/SLPVectorizer.h"
 #include "llvm/Transforms/Vectorize/VectorCombine.h"
 
+#include "Obfuscation/BogusControlFlow.h" // 虚假控制流
+#include "Obfuscation/Flattening.h"  // 控制流平坦化
+#include "Obfuscation/SplitBasicBlock.h" // 基本块分割
+#include "Obfuscation/Substitution.h" // 指令替换
+#include "Obfuscation/StringEncryption.h" // 字符串加密
+#include "Obfuscation/IndirectGlobalVariable.h" // 间接全局变量
+#include "Obfuscation/IndirectBranch.h" // 间接跳转
+#include "Obfuscation/IndirectCall.h" // 间接调用
+
+
 using namespace llvm;
 
 static const Regex DefaultAliasRegex(
@@ -373,6 +383,16 @@ bool shouldPopulateClassToPassNames() {
 
 } // namespace
 
+// 添加命令行支持
+static cl::opt<bool> s_obf_split("split", cl::init(false), cl::desc("SplitBasicBlock: split_num=3(init)"));
+static cl::opt<bool> s_obf_sobf("sobf", cl::init(false), cl::desc("String Obfuscation"));
+static cl::opt<bool> s_obf_fla("fla", cl::init(false), cl::desc("Flattening"));
+static cl::opt<bool> s_obf_sub("sub", cl::init(false), cl::desc("Substitution: sub_loop"));
+static cl::opt<bool> s_obf_bcf("bcf", cl::init(false), cl::desc("BogusControlFlow: application number -bcf_loop=x must be x > 0"));
+static cl::opt<bool> s_obf_ibr("ibr", cl::init(false), cl::desc("Indirect Branch"));
+static cl::opt<bool> s_obf_igv("igv", cl::init(false), cl::desc("Indirect Global Variable"));
+static cl::opt<bool> s_obf_icall("icall", cl::init(false), cl::desc("Indirect Call"));
+
 PassBuilder::PassBuilder(TargetMachine *TM, PipelineTuningOptions PTO,
                          Optional<PGOOptions> PGOOpt,
                          PassInstrumentationCallbacks *PIC)
@@ -408,6 +428,24 @@ PassBuilder::PassBuilder(TargetMachine *TM, PipelineTuningOptions PTO,
   PIC->addClassToPassName(decltype(CREATE_PASS)::name(), NAME);
 #include "PassRegistry.def"
   }
+  
+  // Soule
+  this->registerPipelineStartEPCallback([](llvm::ModulePassManager &MPM,llvm::OptimizationLevel Level) {
+
+        outs() << "[Soule] run.PipelineStartEPCallback\n";
+        //MPM.addPass(StringEncryptionPass(s_obf_sobf));
+
+        llvm::FunctionPassManager FPM;
+        FPM.addPass(IndirectCallPass(s_obf_icall));
+        FPM.addPass(SplitBasicBlockPass(s_obf_split));
+        FPM.addPass(FlatteningPass(s_obf_fla));
+        FPM.addPass(SubstitutionPass(s_obf_sub));
+        FPM.addPass(BogusControlFlowPass(s_obf_bcf));
+        MPM.addPass(createModuleToFunctionPassAdaptor(std::move(FPM)));
+        MPM.addPass(IndirectBranchPass(s_obf_ibr));
+        MPM.addPass(IndirectGlobalVariablePass(s_obf_igv));
+      }
+  );
 }
 
 void PassBuilder::registerModuleAnalyses(ModuleAnalysisManager &MAM) {
