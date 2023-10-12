@@ -431,8 +431,7 @@ PassBuilder::PassBuilder(TargetMachine *TM, PipelineTuningOptions PTO,
   
   // Soule
   this->registerPipelineStartEPCallback([](llvm::ModulePassManager &MPM,llvm::OptimizationLevel Level) {
-
-        outs() << "[Soule] run.PipelineStartEPCallback\n";
+        //outs() << "[Soule] run.PipelineStartEPCallback\n";
         //MPM.addPass(StringEncryptionPass(s_obf_sobf));
 
         llvm::FunctionPassManager FPM;
