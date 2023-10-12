@@ -83,6 +83,7 @@ extern ManagedStatic<CryptoUtils> cryptoutils;
 #define ENDIAN_BIG
 #endif
 
+#define ENDIAN_LITTLE
 #if !defined(ENDIAN_BIG) && !defined(ENDIAN_LITTLE)
 #error                                                                         \
     "Unknown endianness of the compilation platform, check this header aes_encrypt.h"
