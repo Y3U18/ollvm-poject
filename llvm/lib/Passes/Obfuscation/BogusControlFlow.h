@@ -39,7 +39,7 @@ namespace llvm{ // 基本块分割
                 this->flag = flag;
             } // 携带flag的构造函数
             PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM); // Pass实现函数
-            void bogus(Function &F);
+            void bogus(Function &F, int obfTimes, int obfProbRate);
             void addBogusFlow(BasicBlock *basicBlock, Function &F);
             bool doF(Module &M, Function &F);
             static bool isRequired() { return true; } // 直接返回true即可

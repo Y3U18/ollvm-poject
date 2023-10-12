@@ -131,15 +131,18 @@ STATISTIC(FinalNumBasicBlocks, "f. Final number of basic blocks in this module")
 // Options for the pass
 const int defaultObfRate = 30, defaultObfTime = 2;
 
-static cl::opt<int> ObfProbRate("bcf_prob", cl::desc("Choose the probability [%] each basic blocks will be obfuscated by the -bcf pass"), cl::value_desc("probability rate"), cl::init(defaultObfRate), cl::Optional);
+//static cl::opt<int> ObfProbRate("bcf_prob", cl::desc("Choose the probability [%] each basic blocks will be obfuscated by the -bcf pass"), cl::value_desc("probability rate"), cl::init(defaultObfRate), cl::Optional);
 
-static cl::opt<int> ObfTimes("bcf_loop", cl::desc("Choose how many time the -bcf pass loop on a function"), cl::value_desc("number of times"), cl::init(defaultObfTime), cl::Optional);
+//static cl::opt<int> ObfTimes("bcf_loop", cl::desc("Choose how many time the -bcf pass loop on a function"), cl::value_desc("number of times"), cl::init(defaultObfTime), cl::Optional);
 
 
 BasicBlock *createAlteredBasicBlock(BasicBlock *basicBlock, const Twine &Name = "gen", Function *F = 0);
 
 PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager& AM) {
     // Check if the percentage is correct
+    int ObfTimes = rand() % 2 + 1;
+    int ObfProbRate = rand() % 100;
+
     if (ObfTimes <= 0){
         errs() << "BogusControlFlow application number -bcf_loop=x must be x > 0";
         return PreservedAnalyses::all();
@@ -152,8 +155,9 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
     }
     // If fla annotations
     if (toObfuscate(flag, &F, "bcf")){
-      errs() << "BogusControlFlow f: " << F.getName() << "\n";
-      bogus(F);
+      errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
+      bogus(F, ObfTimes, ObfProbRate);
+      errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
       doF(*F.getParent(), F);
       return PreservedAnalyses::none();
     }
@@ -161,7 +165,7 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
 }
 
 
-void BogusControlFlowPass::bogus(Function &F) {
+void BogusControlFlowPass::bogus(Function &F, int obfTimes, int obfProbRate) {
   // For statistics and debug
   ++NumFunction;
   int NumBasicBlocks = 0;
@@ -170,22 +174,22 @@ void BogusControlFlowPass::bogus(Function &F) {
   DEBUG_WITH_TYPE("opt",
                   errs() << "bcf: Started on function " << F.getName() << "\n");
   DEBUG_WITH_TYPE("opt",
-                  errs() << "bcf: Probability rate: " << ObfProbRate << "\n");
-  if (ObfProbRate < 0 || ObfProbRate > 100) {
+                  errs() << "bcf: Probability rate: " << obfProbRate << "\n");
+  if (obfProbRate < 0 || obfProbRate > 100) {
     DEBUG_WITH_TYPE("opt", errs() << "bcf: Incorrect value,"
                                   << " probability rate set to default value: "
                                   << defaultObfRate << " \n");
-    ObfProbRate = defaultObfRate;
+    obfProbRate = defaultObfRate;
   }
   DEBUG_WITH_TYPE("opt", errs() << "bcf: How many times: " << ObfTimes << "\n");
-  if (ObfTimes <= 0) {
+  if (obfTimes <= 0) {
     DEBUG_WITH_TYPE("opt", errs() << "bcf: Incorrect value,"
                                   << " must be greater than 1. Set to default: "
                                   << defaultObfTime << " \n");
-    ObfTimes = defaultObfTime;
+    obfTimes = defaultObfTime;
   }
-  NumTimesOnFunctions = ObfTimes;
-  int NumObfTimes = ObfTimes;
+  NumTimesOnFunctions = obfTimes;
+  int NumObfTimes = obfTimes;
 
   // Real begining of the pass
   // Loop for the number of time we run the pass on the function
@@ -204,7 +208,7 @@ void BogusControlFlowPass::bogus(Function &F) {
     while (!basicBlocks.empty()) {
       NumBasicBlocks++;
       // Basic Blocks' selection
-      if ((int)llvm::cryptoutils->get_range(100) <= ObfProbRate) {
+      if ((int)llvm::cryptoutils->get_range(100) <= obfProbRate) {
         DEBUG_WITH_TYPE("opt", errs() << "bcf: Block " << NumBasicBlocks
                                       << " selected. \n");
         hasBeenModified = true;

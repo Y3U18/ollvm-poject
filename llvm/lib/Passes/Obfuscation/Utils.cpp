@@ -255,3 +255,14 @@ void llvm::LowerConstantExpr(Function &F) {
         }
     }
 }
+
+int llvm::calcInstCnt(Function &F) {
+    int instructionCount = 0;
+    for (BasicBlock &BB : F) {
+        for (Instruction &I : BB) {
+            // 统计每个基本块中的指令数
+            instructionCount++;
+        }
+    }
+    return instructionCount;
+}

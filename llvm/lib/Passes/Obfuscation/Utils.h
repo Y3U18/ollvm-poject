@@ -32,5 +32,6 @@ namespace llvm{
     void FixFunctionConstantExpr(Function *Func);
     string rand_str(int len);
     void LowerConstantExpr(Function &F);
+    int  calcInstCnt(Function &F);
     }
 #endif // LLVM_UTILS_H
