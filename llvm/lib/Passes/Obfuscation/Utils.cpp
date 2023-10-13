@@ -73,9 +73,9 @@ std::string llvm::readAnnotate(Function *f){ //取自原版ollvm项目
  */
 bool llvm::toObfuscate(bool flag, Function *f, std::string const &attribute) { //取自原版ollvm项目
     bool obf = canObfuscate(flag, f, attribute);
-    if (obf){
-        outs() << "F:" << f->getName() << " flag:" <<  flag  << " attribute" << attribute <<  " need  obf \r\n";  
-    }
+    // if (obf){
+    //     outs() << "F:" << f->getName() << " flag:" <<  flag  << " attribute" << attribute <<  " need  obf \r\n";  
+    // }
     return obf;
 }
 

@@ -155,9 +155,9 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
     }
     // If fla annotations
     if (toObfuscate(flag, &F, "bcf")){
-      errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
+      //errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
       bogus(F, ObfTimes, ObfProbRate);
-      errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
+      //errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
       doF(*F.getParent(), F);
       return PreservedAnalyses::none();
     }
