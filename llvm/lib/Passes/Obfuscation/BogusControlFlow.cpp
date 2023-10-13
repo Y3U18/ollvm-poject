@@ -140,23 +140,22 @@ BasicBlock *createAlteredBasicBlock(BasicBlock *basicBlock, const Twine &Name = 
 
 PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager& AM) {
     // Check if the percentage is correct
-    int ObfTimes = rand() % 2 + 1;
-    int ObfProbRate = rand() % 100;
-
-    if (ObfTimes <= 0){
-        errs() << "BogusControlFlow application number -bcf_loop=x must be x > 0";
-        return PreservedAnalyses::all();
-    }
-    // Check if the number of applications is correct
-    if (!((ObfProbRate > 0) && (ObfProbRate <= 100))) {
-      errs() << "BogusControlFlow application basic blocks percentage "
-                "-bcf_prob=x must be 0 < x <= 100";
-      return PreservedAnalyses::all();
-    }
     // If fla annotations
     if (toObfuscate(flag, &F, "bcf")){
+      int obfTimes = rand() % 2 + 1;
+      int obfProbRate = rand() % 100 + 1;
+
+      if (obfTimes <= 0){
+        errs() << "BogusControlFlow application number -bcf_loop=x must be x > 0 \r\n";
+        return PreservedAnalyses::all();
+      }
+      // Check if the number of applications is correct
+      if (!((obfProbRate > 0) && (obfProbRate <= 100))) {
+        errs() << "BogusControlFlow application basic blocks percentage  -bcf_prob=" << obfProbRate << " must be 0 < x <= 100 \r\n";
+        return PreservedAnalyses::all();
+      }
       //errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
-      bogus(F, ObfTimes, ObfProbRate);
+      bogus(F, obfTimes, obfProbRate);
       //errs() << "bcf after: " << F.getName() << ", " << readAnnotate(&F) << " ObfTimes: " << ObfTimes  << " ObfProbRate: " << ObfProbRate  << " func_size:" << calcInstCnt(F) << "\n";
       doF(*F.getParent(), F);
       return PreservedAnalyses::none();
